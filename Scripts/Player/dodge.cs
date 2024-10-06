@@ -29,7 +29,6 @@ public partial class dodge : Node
         }
     }
 
-    // Update dodge behavior
     public void UpdateDodge(float delta)
     {
         if (isDodging)
@@ -52,7 +51,6 @@ public partial class dodge : Node
             }
         }
 
-        // Handle cooldown timer
         if (dodgeCooldownTimer > 0)
         {
             dodgeCooldownTimer -= delta;

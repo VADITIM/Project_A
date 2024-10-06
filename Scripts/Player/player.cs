@@ -74,90 +74,7 @@ public partial class player : CharacterBody2D
     public void handleAnimation()
     {
         Vector2 directionToMouse = GetGlobalMousePosition() - GlobalPosition;
-
-        #region Idle/Movement
-        if (currentVelocity == Vector2.Zero)
-        {
-            if (Math.Abs(directionToMouse.X) > Math.Abs(directionToMouse.Y))
-            {
-                if (directionToMouse.X > 0)
-                {
-                    animatedSprite.Play("idle_right");
-                    animatedSprite.FlipH = false;
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("idle_right");
-                    animatedSprite.FlipH = true;
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-            else
-            {
-                if (directionToMouse.Y > 0)
-                {
-                    animatedSprite.Play("idle_down");
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("idle_up");
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-        }
-        else
-        {
-            // Movement animation based on mouse position
-            if (Math.Abs(directionToMouse.X) > Math.Abs(directionToMouse.Y))
-            {
-                if (directionToMouse.X > 0)
-                {
-                    animatedSprite.Play("move_right");
-                    animatedSprite.FlipH = false;
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("move_right");
-                    animatedSprite.FlipH = true;
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-            else
-            {
-                if (directionToMouse.Y > 0)
-                {
-                    animatedSprite.Play("move_down");
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("move_up");
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-        }
-        #endregion
-
-
+    
         #region FireSpell
         if (FireSpell.SpellBurnWindup())
         {
@@ -249,15 +166,11 @@ public partial class player : CharacterBody2D
         }
         #endregion
 
-
         #region MeleeAttack
         if (attack.MeleeWindup())
         {
-            // During attack, use locked attackDirection
             Vector2 direction = attack.GetAttackDirection();
 
-
-            // Determine attack animation based on locked direction
             if (Math.Abs(direction.X) > Math.Abs(direction.Y))
             {
                 if (direction.X > 0)
@@ -288,9 +201,89 @@ public partial class player : CharacterBody2D
                     fireSpell.Visible = false;
                 }
             }
-            return; // Exit, don't process movement/idle animations during an attack
+            return; 
         }
         #endregion
 
+        #region Idle/Movement
+        if (currentVelocity == Vector2.Zero)
+        {
+            if (Math.Abs(directionToMouse.X) > Math.Abs(directionToMouse.Y))
+            {
+                if (directionToMouse.X > 0)
+                {
+                    animatedSprite.Play("idle_right");
+                    animatedSprite.FlipH = false;
+
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+                else
+                {
+                    animatedSprite.Play("idle_right");
+                    animatedSprite.FlipH = true;
+
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+            }
+            else
+            {
+                if (directionToMouse.Y > 0)
+                {
+                    animatedSprite.Play("idle_down");
+
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+                else
+                {
+                    animatedSprite.Play("idle_up");
+
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+            }
+        }
+        else
+        {
+            if (Math.Abs(directionToMouse.X) > Math.Abs(directionToMouse.Y))
+            {
+                if (directionToMouse.X > 0)
+                {
+                    animatedSprite.Play("move_right");
+                    animatedSprite.FlipH = false;
+                    
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+                else
+                {
+                    animatedSprite.Play("move_right");
+                    animatedSprite.FlipH = true;
+                    
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+            }
+            else
+            {
+                if (directionToMouse.Y > 0)
+                {
+                    animatedSprite.Play("move_down");
+                    
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+                else
+                {
+                    animatedSprite.Play("move_up");
+                    
+                    fireSpell.Visible = false;
+                    iceSpell.Visible = false;
+                }
+            }
+        }
+        #endregion
     }
 }

@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class IceSpell : Node
+public partial class SpellIce : Node
 {
 	private bool iceSpellWindup = false;
     private float iceSpellTime = .5f;
@@ -12,17 +12,17 @@ public partial class IceSpell : Node
 
 	private CharacterBody2D player;
 
-	public IceSpell(CharacterBody2D player)
+	public SpellIce(CharacterBody2D player)
 	{
 		this.player = player;
 	}
 
 	public void UpdateAttack(float delta)
 	{
-		SpellBurnAttack(delta);
+		AirSpellAttack(delta);
 	}
 
-    public void SpellBurnAttack(float delta)
+    public void AirSpellAttack(float delta)
     {
         if (iceSpellWindup)
         {

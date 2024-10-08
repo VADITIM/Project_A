@@ -1,36 +1,33 @@
 using System;
 using Godot;
 
-public partial class player : CharacterBody2D
+public partial class Player : CharacterBody2D
 {
     private float speed = 300f;
     private Vector2 currentVelocity;
     private Vector2 currentDirection;
-    private Vector2 attackDirection; 
 
-    private AnimatedSprite2D animatedSprite;
-    private AnimatedSprite2D fireSpell;
-    private AnimatedSprite2D iceSpell;
+    private AnimatedSprite2D PlayerSprite;
+    private AnimatedSprite2D AirSpellSprite;
+    private AnimatedSprite2D defaultAttackSprite; 
 
-
-    private dodge dodge;
-    private attack attack;
-    private FireSpell FireSpell;
-    private IceSpell IceSpell;
+    private Dodge dodge;
+    private DefaultAttack defaultAttack;
+    private AirSpell airSpell;
 
     public override void _Ready()
     {
-        animatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-        fireSpell = GetNode<AnimatedSprite2D>("FireSpell");
-        iceSpell = GetNode<AnimatedSprite2D>("IceSpell");
+        PlayerSprite = GetNode<AnimatedSprite2D>("PlayerSprite");
+        AirSpellSprite = GetNode<AnimatedSprite2D>("AirSpell");
+        defaultAttackSprite = GetNode<AnimatedSprite2D>("Default_Attack");
 
-        fireSpell.Visible = false;
-        iceSpell.Visible = false;
+        AirSpellSprite.Visible = false;
 
-        dodge = new dodge(this);
-        attack = new attack(this);
-        FireSpell = new FireSpell(this);
-        IceSpell = new IceSpell(this);
+        dodge = new Dodge(this);
+
+        defaultAttack = new DefaultAttack(this, PlayerSprite, defaultAttackSprite);
+
+        airSpell = new AirSpell(this, AirSpellSprite);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -42,20 +39,18 @@ public partial class player : CharacterBody2D
             handleInput();
             handleAnimation();
 
-            attack.UpdateAttack((float)delta);
-            FireSpell.UpdateAttack((float)delta);
-            IceSpell.UpdateAttack((float)delta);
+            defaultAttack.UpdateAttack((float)delta);
+            airSpell.UpdateAttack((float)delta);
         }
         MoveAndSlide();
     }
 
-    #region Input
     private void handleInput()
     {
         currentVelocity = Input.GetVector("left", "right", "up", "down");
         currentVelocity *= speed;
 
-        if (!attack.MeleeWindup() && currentVelocity != Vector2.Zero)
+        if (!defaultAttack.Windup() && currentVelocity != Vector2.Zero)
         {
             currentDirection = currentVelocity.Normalized();
         }
@@ -69,221 +64,9 @@ public partial class player : CharacterBody2D
             Velocity = currentVelocity;
         }
     }
-    #endregion
 
-    public void handleAnimation()
+    private void handleAnimation()
     {
-        Vector2 directionToMouse = GetGlobalMousePosition() - GlobalPosition;
-    
-        #region FireSpell
-        if (FireSpell.SpellBurnWindup())
-        {
-            Vector2 direction = FireSpell.GetAttackDirection();
-            if (Math.Abs(direction.X) > Math.Abs(direction.Y))
-            {
-                if (direction.X > 0)
-                {
-                    fireSpell.Play("default");
-                    fireSpell.Visible = true;
-                    fireSpell.Position = new Vector2(40, 0);
-                }
-                else
-                {
-                    fireSpell.Play("default");
-                    fireSpell.Visible = true;
-                    fireSpell.Position = new Vector2(-40, 0);
-                }
-            }
-            else
-            {
-                if (direction.Y > 0)
-                {
-                    fireSpell.Play("default");
-                    fireSpell.Visible = true;
-                    fireSpell.Position = new Vector2(0, 40);
-
-                }
-                else
-                {
-                    fireSpell.Play("default");
-                    fireSpell.Visible = true;
-                    fireSpell.Position = new Vector2(0, -40);
-
-                }
-            }
-            return; // Exit, don't process movement/idle animations during an attack
-        }
-        #endregion
-
-        #region IceSpell
-        if (IceSpell.IceSpellWindup())
-        {
-            Vector2 direction = IceSpell.GetAttackDirection();
-            if (Math.Abs(direction.X) > Math.Abs(direction.Y))
-            {
-                if (direction.X > 0)
-                {
-                    iceSpell.Play("default");
-                    iceSpell.Visible = true;
-                    iceSpell.Position = new Vector2(50, 0);
-                    iceSpell.FlipH = true;
-                    iceSpell.FlipV = false;
-                    iceSpell.Rotation = 30;
-                }
-                else
-                {
-                    iceSpell.Play("default");
-                    iceSpell.Visible = true;
-                    iceSpell.Position = new Vector2(-50, 0);
-                    iceSpell.FlipH = false;
-                    iceSpell.FlipV = false;
-                    iceSpell.Rotation = -30;
-                }
-            }
-            else
-            {
-                if (direction.Y > 0)
-                {
-                    iceSpell.Play("default");
-                    iceSpell.Visible = true;
-                    iceSpell.Rotation = 0;
-                    iceSpell.Position = new Vector2(0, 55);
-                    iceSpell.FlipH = false;
-                    iceSpell.FlipV = false;
-
-                }
-                else
-                {
-                    iceSpell.Play("default");
-                    iceSpell.Visible = true;
-                    iceSpell.Rotation = 0;
-                    iceSpell.Position = new Vector2(0, -55);
-                    iceSpell.FlipH = false;
-                    iceSpell.FlipV = true;
-                }
-            }
-            return; // Exit, don't process movement/idle animations during an attack
-        }
-        #endregion
-
-        #region MeleeAttack
-        if (attack.MeleeWindup())
-        {
-            Vector2 direction = attack.GetAttackDirection();
-
-            if (Math.Abs(direction.X) > Math.Abs(direction.Y))
-            {
-                if (direction.X > 0)
-                {
-                    animatedSprite.Play("attack_right");
-                    animatedSprite.FlipH = false;
-                    fireSpell.Play("default");
-                }
-                else
-                {
-                    animatedSprite.Play("attack_right");
-                    animatedSprite.FlipH = true;
-                    fireSpell.Play("default");
-                }
-            }
-            else
-            {
-                if (direction.Y > 0)
-                {
-                    animatedSprite.Play("attack_down");
-                    animatedSprite.FlipH = false;
-                    fireSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("attack_up");
-                    animatedSprite.FlipH = false;
-                    fireSpell.Visible = false;
-                }
-            }
-            return; 
-        }
-        #endregion
-
-        #region Idle/Movement
-        if (currentVelocity == Vector2.Zero)
-        {
-            if (Math.Abs(directionToMouse.X) > Math.Abs(directionToMouse.Y))
-            {
-                if (directionToMouse.X > 0)
-                {
-                    animatedSprite.Play("idle_right");
-                    animatedSprite.FlipH = false;
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("idle_right");
-                    animatedSprite.FlipH = true;
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-            else
-            {
-                if (directionToMouse.Y > 0)
-                {
-                    animatedSprite.Play("idle_down");
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("idle_up");
-
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-        }
-        else
-        {
-            if (Math.Abs(directionToMouse.X) > Math.Abs(directionToMouse.Y))
-            {
-                if (directionToMouse.X > 0)
-                {
-                    animatedSprite.Play("move_right");
-                    animatedSprite.FlipH = false;
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("move_right");
-                    animatedSprite.FlipH = true;
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-            else
-            {
-                if (directionToMouse.Y > 0)
-                {
-                    animatedSprite.Play("move_down");
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-                else
-                {
-                    animatedSprite.Play("move_up");
-                    
-                    fireSpell.Visible = false;
-                    iceSpell.Visible = false;
-                }
-            }
-        }
-        #endregion
+        defaultAttack.HandleAttackAnimation(currentVelocity);
     }
 }

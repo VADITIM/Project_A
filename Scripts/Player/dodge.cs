@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class dodge : Node
+public partial class Dodge : Node
 {
     private bool isDodging = false;
     private float dodgeSpeed = 1200f;
@@ -12,7 +12,7 @@ public partial class dodge : Node
 
     private CharacterBody2D player;
 
-    public dodge(CharacterBody2D player)
+    public Dodge(CharacterBody2D player)
     {
         this.player = player;
     }

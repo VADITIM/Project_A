@@ -23,7 +23,7 @@ public partial class Player : CharacterBody2D
 
         AirSpellSprite.Visible = false;
 
-        dodge = new Dodge(this);
+        dodge = new Dodge(this, PlayerSprite);
 
         defaultAttack = new DefaultAttack(this, PlayerSprite, defaultAttackSprite);
 

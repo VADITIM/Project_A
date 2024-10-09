@@ -20,7 +20,7 @@ public partial class Player : CharacterBody2D
         defaultAttackSprite = GetNode<AnimatedSprite2D>("Default_Attack");
         AirSpellSprite.Visible = false;
         dodge = new Dodge(this, PlayerSprite);
-        defaultAttack = new DefaultAttack(this, PlayerSprite, defaultAttackSprite);
+        defaultAttack = new DefaultAttack(this, PlayerSprite, defaultAttackSprite, defaultAttackSprite.GetNode<Area2D>("Hitbox"));
         airSpell = new AirSpell(this, AirSpellSprite);
     }
 

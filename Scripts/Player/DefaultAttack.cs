@@ -71,7 +71,7 @@ public partial class DefaultAttack : Node
 
         effectSprite.FlipH = isMouseOnLeft;
 
-        Vector2 effectOffset = attackDirection * 20; 
+        Vector2 effectOffset = attackDirection * 40; 
 
         effectSprite.GlobalPosition = player.GlobalPosition + effectOffset;
 
@@ -88,39 +88,6 @@ public partial class DefaultAttack : Node
         effectSprite.Frame = 0;
     }
 
-
-    private string GetDirectionFromAngle(float angle)
-    {
-        angle = Mathf.PosMod(angle, Mathf.Tau); 
-
-        if (angle < Mathf.Pi / 8 || angle >= 15 * Mathf.Pi / 8) return "right";
-        if (angle < 3 * Mathf.Pi / 8) return "downright";
-        if (angle < 5 * Mathf.Pi / 8) return "down";
-        if (angle < 7 * Mathf.Pi / 8) return "downleft";
-        if (angle < 9 * Mathf.Pi / 8) return "left";
-        if (angle < 11 * Mathf.Pi / 8) return "upleft";
-        if (angle < 13 * Mathf.Pi / 8) return "up";
-        if (angle < 15 * Mathf.Pi / 8) return "upright";
-
-        return "down";
-    }
-
-    private Vector2 GetEffectOffset(string direction)
-    {
-        return direction switch
-        {
-            "right" => new Vector2(20, -10),
-            "downright" => new Vector2(15, 0),
-            "down" => new Vector2(0, 10),
-            "downleft" => new Vector2(-15, 0),  
-            "left" => new Vector2(-20, -10),
-            "upleft" => new Vector2(-15, -20), 
-            "up" => new Vector2(0, -20),
-            "upright" => new Vector2(15, -20),
-            _ => Vector2.Zero,
-        };
-    }
-
     public Vector2 GetAttackDirection()
     {
         return attackDirection;
@@ -129,34 +96,5 @@ public partial class DefaultAttack : Node
     public bool Windup()
     {
         return windup;
-    }
-
-    public void HandleAttackAnimation(Vector2 currentVelocity)
-    {
-        if (!Windup())
-        {
-            Vector2 directionToMouse = player.GetGlobalMousePosition() - player.GlobalPosition;
-            string direction = GetDirectionFromAngle(directionToMouse.Angle());
-
-            bool isLeftOrRight = (direction == "left" || direction == "right");
-            playerSprite.FlipH = (direction == "downleft" || direction == "upleft" || direction == "left");
-
-            if (currentVelocity == Vector2.Zero)
-            {
-                string animationName = "gunner_idle_" + 
-                    (isLeftOrRight ? "downright" : 
-                    direction == "downleft" ? "downright" : 
-                    direction == "upleft" ? "upright" : direction);
-                playerSprite.Play(animationName);
-            }
-            else
-            {
-                string animationName = "gunner_move_" + 
-                    (isLeftOrRight ? "downright" : 
-                    direction == "downleft" ? "downright" : 
-                    direction == "upleft" ? "upright" : direction);
-                playerSprite.Play(animationName);
-            }
-        }
     }
 }

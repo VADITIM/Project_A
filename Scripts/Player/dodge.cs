@@ -3,8 +3,8 @@ using Godot;
 public partial class Dodge : Node
 {
     private bool isDodging = false;
-    private float dodgeSpeed = 1200f;
-    private float dodgeTime = .12f;   
+    private float dodgeSpeed = 450f;
+    private float dodgeTime = .42f;   
     private float dodgeCooldown = .6f; 
     private float dodgeCooldownTimer = 0f;   
     private float currentDodgeCooldownTimer;   
@@ -30,7 +30,6 @@ public partial class Dodge : Node
             dodgeCooldownTimer = dodgeCooldown;
             dodgeDirection = direction.Normalized();
             player.Velocity = dodgeDirection * dodgeSpeed;
-            HandleDodgeAnimation(player.Velocity);
         }
     }
 
@@ -60,48 +59,6 @@ public partial class Dodge : Node
         {
             dodgeCooldownTimer -= delta;
         }
-    }
-
-    public void HandleDodgeAnimation(Vector2 currentVelocity)
-    {
-        float movementAngle = player.Velocity.Angle();
-        string direction = GetDirectionFromAngle(movementAngle);
-
-        bool isLeftOrRight = (direction == "left" || direction == "right");
-        playerSprite.FlipH = (direction == "downleft" || direction == "upleft" || direction == "left");
-
-        if (currentVelocity == Vector2.Zero)
-        {
-            string animationName = "gunner_idle_" + 
-                (isLeftOrRight ? "downright" : 
-                direction == "downleft" ? "downright" : 
-                direction == "upleft" ? "upright" : direction);
-            playerSprite.Play(animationName);
-        }
-        else
-        {
-            string animationName = "gunner_dodge_" + 
-                (isLeftOrRight ? "downright" : 
-                direction == "downleft" ? "downright" : 
-                direction == "upleft" ? "upright" : direction);
-            playerSprite.Play(animationName);
-        }
-    }
-
-    private string GetDirectionFromAngle(float angle)
-    {
-        angle = Mathf.PosMod(angle, Mathf.Tau); 
-
-        if (angle < Mathf.Pi / 8 || angle >= 15 * Mathf.Pi / 8) return "right";
-        if (angle < 3 * Mathf.Pi / 8) return "downright";
-        if (angle < 5 * Mathf.Pi / 8) return "down";
-        if (angle < 7 * Mathf.Pi / 8) return "downleft";
-        if (angle < 9 * Mathf.Pi / 8) return "left";
-        if (angle < 11 * Mathf.Pi / 8) return "upleft";
-        if (angle < 13 * Mathf.Pi / 8) return "up";
-        if (angle < 15 * Mathf.Pi / 8) return "upright";
-
-        return "down";
     }
 
     private void EndDodge()

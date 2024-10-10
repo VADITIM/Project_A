@@ -1,4 +1,3 @@
-using System;
 using Godot;
 
 public partial class Player : CharacterBody2D
@@ -8,19 +7,32 @@ public partial class Player : CharacterBody2D
     private Vector2 currentDirection;
     private AnimatedSprite2D PlayerSprite;
     private AnimatedSprite2D AirSpellSprite;
-    private AnimatedSprite2D defaultAttackSprite; 
+    private AnimatedSprite2D leftAttackSprite; 
+
+    private AnimatedSprite2D gauntletSprite;
+    private AnimatedSprite2D leftGauntletSprite;
+    private AnimatedSprite2D rightGauntletSprite;
+
     private Dodge dodge;
-    private DefaultAttack defaultAttack;
+    private LeftAttack leftAttack;
     private AirSpell airSpell;
+    private Vector2 lookDirection;
 
     public override void _Ready()
     {
         PlayerSprite = GetNode<AnimatedSprite2D>("PlayerSprite");
         AirSpellSprite = GetNode<AnimatedSprite2D>("AirSpell");
-        defaultAttackSprite = GetNode<AnimatedSprite2D>("Default_Attack");
         AirSpellSprite.Visible = false;
+        leftAttackSprite = GetNode<AnimatedSprite2D>("Left_Attack");
+        gauntletSprite = GetNode<AnimatedSprite2D>("Gauntlet");
+        gauntletSprite.Visible = false;
+        leftGauntletSprite = GetNode<AnimatedSprite2D>("Gauntlet_Left");
+        leftGauntletSprite.Visible = false;
+        rightGauntletSprite = GetNode<AnimatedSprite2D>("Gauntlet_Right");
+        rightGauntletSprite.Visible = false;
+        
         dodge = new Dodge(this, PlayerSprite);
-        defaultAttack = new DefaultAttack(this, PlayerSprite, defaultAttackSprite, defaultAttackSprite.GetNode<Area2D>("Hitbox"));
+        leftAttack = new LeftAttack(this, PlayerSprite, leftAttackSprite, leftAttackSprite.GetNode<Area2D>("Hitbox"));
         airSpell = new AirSpell(this, AirSpellSprite);
     }
 
@@ -32,7 +44,7 @@ public partial class Player : CharacterBody2D
         {
             handleInput();
             handleAnimation();
-            defaultAttack.UpdateAttack((float)delta);
+            leftAttack.UpdateAttack((float)delta);
             airSpell.UpdateAttack((float)delta);
         }
         MoveAndSlide();
@@ -42,7 +54,7 @@ public partial class Player : CharacterBody2D
     {
         currentVelocity = Input.GetVector("left", "right", "up", "down");
         currentVelocity *= speed;
-        if (!defaultAttack.Windup() && currentVelocity != Vector2.Zero)
+        if (!leftAttack.Windup() && currentVelocity != Vector2.Zero)
         {
             currentDirection = currentVelocity.Normalized();
         }
@@ -70,6 +82,8 @@ private void Animation(Vector2 currentVelocity)
 
     bool isLeftOrRight = (direction == "left" || direction == "right");
     PlayerSprite.FlipH = (direction == "downleft" || direction == "upleft" || direction == "left");
+    leftGauntletSprite.FlipH = (direction == "downleft" || direction == "upleft" || direction == "left");
+    rightGauntletSprite.FlipH = (direction == "downleft" || direction == "upleft" || direction == "left");
 
     if (currentVelocity == Vector2.Zero)
     {
@@ -78,6 +92,21 @@ private void Animation(Vector2 currentVelocity)
             direction == "downleft" ? "downright" : 
             direction == "upleft" ? "upright" : direction);
         PlayerSprite.Play(animationName);
+
+        string animationLeftGauntlet = "gauntlet_idle_" +
+            (isLeftOrRight ? "downright" :
+            direction == "downleft" ? "downright" :
+            direction == "upleft" ? "upright" : direction);
+        leftGauntletSprite.Visible = true;
+        leftGauntletSprite.Play(animationLeftGauntlet);    
+
+        string animationRightGauntlet = "gauntlet_idle_" +
+            (isLeftOrRight ? "downright" :
+            direction == "downleft" ? "downright" :
+            direction == "upleft" ? "upright" : direction);
+        rightGauntletSprite.Visible = true;
+        rightGauntletSprite.Play(animationRightGauntlet);    
+
     }
     else
     {
@@ -85,7 +114,19 @@ private void Animation(Vector2 currentVelocity)
             (isLeftOrRight ? "downright" : 
             direction == "downleft" ? "downright" : 
             direction == "upleft" ? "upright" : direction);
+        leftGauntletSprite.Visible = false;
+        rightGauntletSprite.Visible = false;
         PlayerSprite.Play(animationName);
+    }
+
+    if (leftAttack.Windup())
+    {
+        string animationGauntlet = "gauntlet_attack_" +
+            (isLeftOrRight ? "downright" :
+            direction == "downleft" ? "downright" :
+            direction == "upleft" ? "upright" : direction);
+        leftGauntletSprite.Visible = true;
+        leftGauntletSprite.Play(animationGauntlet);    
     }
 
     if (dodge.IsDodging())

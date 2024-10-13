@@ -9,15 +9,13 @@ public partial class LeftAttack : Node
     private float currentAttackCooldownTimer = 0f;
     private Vector2 attackDirection;
 
-    
     private AnimatedSprite2D playerSprite;
     private AnimatedSprite2D effectSprite;
     private AnimatedSprite2D leftGauntletSprite;
-
-    private Area2D hitbox; 
-    private CollisionShape2D hitboxShape; 
-
+    private Area2D hitbox;
+    private CollisionShape2D hitboxShape;
     private CharacterBody2D player;
+
     private GauntletManager gauntletManager;
 
     public LeftAttack(CharacterBody2D player, AnimatedSprite2D playerSprite, AnimatedSprite2D effectSprite, Area2D hitbox, AnimatedSprite2D leftGauntletSprite, GauntletManager gauntletManager)
@@ -29,17 +27,16 @@ public partial class LeftAttack : Node
         this.leftGauntletSprite = leftGauntletSprite;
         this.gauntletManager = gauntletManager;
 
+        hitboxShape = hitbox.GetNode<CollisionShape2D>("CollisionShape2D");
         hitbox.AreaEntered += OnAreaEntered;
-
         hitbox.Monitoring = false;
+
+        leftGauntletSprite.ZIndex = 3;
+        effectSprite.ZIndex = 2;
+        playerSprite.ZIndex = 3;
     }
 
     public void UpdateAttack(float delta)
-    {
-        Attack(delta);
-    }
-
-    public void Attack(float delta)
     {
         if (windup)
         {
@@ -48,9 +45,9 @@ public partial class LeftAttack : Node
             {
                 windup = false;
                 attackCooldownTimer = cooldown;
-                effectSprite.Visible = false;
-
+                effectSprite.Stop();
                 hitbox.Monitoring = false;
+            effectSprite.Visible = false;
             }
         }
         else
@@ -68,52 +65,32 @@ public partial class LeftAttack : Node
     {
         windup = true;
         currentAttackCooldownTimer = time;
-
         Vector2 directionToMouse = player.GetGlobalMousePosition() - player.GlobalPosition;
         attackDirection = directionToMouse.Normalized();
-
         effectSprite.Visible = true;
-
         hitbox.Monitoring = true;
-
         PlayAttackAnimations();
+        UpdateEffectSpriteZIndex();
     }
 
     private void PlayAttackAnimations()
     {
         Vector2 gauntletPosition = leftGauntletSprite.GlobalPosition;
-        Vector2 effectOffset = attackDirection * 25; 
-
+        Vector2 effectOffset = attackDirection * 25;
         bool isMouseOnLeft = attackDirection.X < 0;
         float angleToMouse = attackDirection.Angle();
-
-        string direction = isMouseOnLeft ? "flipped" : "";
-        
-        GauntletManager.GauntletType gauntletType = gauntletManager.GetLeftGauntletType();
-        string effectAnimation = gauntletManager.GetAttackAnimation(gauntletType, true, direction);
+        string direction = isMouseOnLeft ? "1_flipped" : "1";
 
         effectSprite.FlipH = isMouseOnLeft;
         effectSprite.GlobalPosition = gauntletPosition + effectOffset;
         effectSprite.Rotation = angleToMouse;
-        effectSprite.Stop();
-        effectSprite.Play(effectAnimation);
-        effectSprite.Frame = 0;
-        GD.Print("Playing animation: " + effectAnimation);
-    }
 
-    private void UpdateHitbox(string animationName)
-    {
-        switch (animationName)
-        {
-            case "fire_attack_1":
-                hitboxShape.Shape = new RectangleShape2D { Size = new Vector2(45, 11) };
-                hitbox.Position = new Vector2(30, 0);
-                break;
-            case "air_attack_1":
-                hitboxShape.Shape = new RectangleShape2D { Size = new Vector2(22, 17) };
-                hitbox.Position = new Vector2(0, 30);
-                break;
-        }
+        string baseAttackAnimation = gauntletManager.GetCurrentGauntletAttackAnimation("left");
+        string leftGauntletAttackAnimation = $"{baseAttackAnimation}_{direction}";
+
+        effectSprite.Play(leftGauntletAttackAnimation);
+
+        GD.Print("Playing attack animation: " + leftGauntletAttackAnimation);
     }
 
     private void OnAreaEntered(Area2D other)
@@ -121,6 +98,18 @@ public partial class LeftAttack : Node
         if (other is Area2D target)
         {
             GD.Print("Hit: " + target.Name);
+        }
+    }
+
+    private void UpdateEffectSpriteZIndex()
+    {
+        if (attackDirection.Y < 0)
+        {
+            effectSprite.ZIndex = playerSprite.ZIndex - 1;
+        }
+        else
+        {
+            effectSprite.ZIndex = playerSprite.ZIndex + 1;
         }
     }
 
@@ -132,5 +121,10 @@ public partial class LeftAttack : Node
     public bool Windup()
     {
         return windup;
+    }
+
+    public AnimatedSprite2D GetGauntletSprite()
+    {
+        return leftGauntletSprite;
     }
 }

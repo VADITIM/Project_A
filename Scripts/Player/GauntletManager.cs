@@ -1,86 +1,161 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class GauntletManager : Node
 {
-    public enum GauntletType
+    [Export] public PackedScene AirGauntletScene;
+    [Export] public PackedScene FireGauntletScene;
+    [Export] public PackedScene AirAttackScene;
+    [Export] public PackedScene FireAttackScene;
+    [Export] public PackedScene WaterGauntletScene;
+    [Export] public PackedScene WaterAttackScene;
+    [Export] private Node2D leftGauntlet; 
+    [Export] private Node2D rightGauntlet;
+
+    private LeftAttack leftAttack;
+    private RightAttack rightAttack;
+
+    private string currentLeftGauntletIdleAnimation;
+    private string currentRightGauntletIdleAnimation;
+
+    private string currentLeftGauntletAttackAnimation;
+    private string currentRightGauntletAttackAnimation;
+    
+    private Dictionary<string, string> equippedGauntlets = new Dictionary<string, string>();
+
+    public override void _Ready()
     {
-        Air,
-        Fire,
+        EquipGauntletToHand(leftGauntlet, WaterGauntletScene, WaterAttackScene, false);
+        EquipGauntletToHand(rightGauntlet, FireGauntletScene, FireAttackScene, true);
     }
 
-    private AnimatedSprite2D leftGauntletSprite;
-    private AnimatedSprite2D rightGauntletSprite;
-    private AnimatedSprite2D leftAttackSprite;
-    private AnimatedSprite2D rightAttackSprite;
-    private GauntletType leftGauntletType;
-    private GauntletType rightGauntletType;
 
-    public void InitGauntlets(AnimatedSprite2D leftSprite, AnimatedSprite2D rightSprite, 
-                              AnimatedSprite2D leftAttack, AnimatedSprite2D rightAttack)
+    public void EquipGauntlet(string side, string gauntletType)
     {
-        leftGauntletSprite = leftSprite;
-        rightGauntletSprite = rightSprite;
-        leftAttackSprite = leftAttack;
-        rightAttackSprite = rightAttack;
+        if (side == "left")
+        {
+            if (gauntletType == "Air")
+            {
+                EquipGauntletToHand(leftGauntlet, AirGauntletScene, AirAttackScene, false);
+            }
+             if (gauntletType == "Fire")
+            {
+                EquipGauntletToHand(leftGauntlet, FireGauntletScene, FireAttackScene, false);
+            }
+             if (gauntletType == "Water")
+            {
+                EquipGauntletToHand(leftGauntlet, WaterGauntletScene, WaterAttackScene, false);
+            }
+        }
+        else if (side == "right")
+        {
+            if (gauntletType == "Air")
+            {
+                EquipGauntletToHand(rightGauntlet, AirGauntletScene, AirAttackScene, true);
+            }
+            if (gauntletType == "Fire")
+            {
+                EquipGauntletToHand(rightGauntlet, FireGauntletScene, FireAttackScene, true);
+            }
+             if (gauntletType == "Water")
+            {
+                EquipGauntletToHand(leftGauntlet, WaterGauntletScene, WaterAttackScene, false);
+            }
+        }
+        equippedGauntlets[side] = gauntletType;
     }
 
-    public void EquipGauntlet(GauntletType type, bool isRightHand)
+    public string GetGauntletType(string side)
     {
+        return equippedGauntlets.ContainsKey(side) ? equippedGauntlets[side] : null;
+    }
+
+    public string GetCurrentGauntletIdleAnimation(string side)
+    {
+        string gauntletType = GetGauntletType(side);
+        // GD.Print($"Retrieving idle animation for {side} gauntlet: {gauntletType}");
+        if (gauntletType == "Air")
+        {
+            return "air_gauntlet_idle"; 
+        }
+        else if (gauntletType == "Fire")
+        {
+            return "fire_gauntlet_idle"; 
+        }
+        else if (gauntletType == "Water")
+        {
+            return "water_gauntlet_idle"; 
+        }
+        return "default_idle";
+
+        
+    }
+
+    public string GetCurrentGauntletAttackAnimation(string side)
+    {
+        string gauntletType = GetGauntletType(side);
+        // GD.Print($"Retrieving attack animation for {side} gauntlet: {gauntletType}");
+        if (gauntletType == "Air")
+        {
+            return "air_gauntlet_attack"; 
+        }
+        else if (gauntletType == "Fire")
+        {
+            return "fire_gauntlet_attack"; 
+        }
+        else if (gauntletType == "Water")
+        {
+            return "water_gauntlet_attack"; 
+        }
+        return "default_attack";
+    }
+    
+    public void SetCurrentGauntletIdleAnimation(string hand, string animation)
+    {
+        if (hand == "left")
+        {
+            currentLeftGauntletIdleAnimation = animation;
+        }
+        else if (hand == "right")
+        {
+            currentRightGauntletIdleAnimation = animation;
+        }
+    }
+
+    public void EquipGauntletToHand(Node2D handNode, PackedScene gauntletScene, PackedScene attackScene, bool isRightHand)
+    {
+        foreach (Node child in handNode.GetChildren())
+        {
+            child.QueueFree();
+        }
+
+        var newGauntlet = (Node2D)gauntletScene.Instantiate();
+        handNode.AddChild(newGauntlet);
+        var attackAnimation = (Node2D)attackScene.Instantiate();
+        newGauntlet.AddChild(attackAnimation);
+        var gauntletSprite = newGauntlet.GetNode<AnimatedSprite2D>("GauntletSprite");
+        var effectSprite = attackAnimation.GetNode<AnimatedSprite2D>("EffectSprite");
+        var hitbox = attackAnimation.GetNode<Area2D>("EffectSprite/Hitbox");
+        var player = GetParent().GetParent().GetNode<CharacterBody2D>("Player");
+        var playerSprite = player.GetNode<AnimatedSprite2D>("PlayerSprite");
+
         if (isRightHand)
         {
-            rightGauntletType = type;
-            UpdateGauntletAnimation(rightGauntletSprite, rightGauntletType, isRightHand);
+            rightAttack = new RightAttack(player, playerSprite, effectSprite, hitbox, gauntletSprite, this);
         }
         else
         {
-            leftGauntletType = type;
-            UpdateGauntletAnimation(leftGauntletSprite, leftGauntletType, isRightHand);
+            leftAttack = new LeftAttack(player, playerSprite, effectSprite, hitbox, gauntletSprite, this);
         }
     }
 
-    public void UpdateGauntletAnimation(AnimatedSprite2D gauntletSprite, GauntletType type, bool isRightHand)
+    public LeftAttack GetLeftAttack()
     {
-        string baseAnimation = type switch
-        {
-            GauntletType.Air => "air_gauntlet",
-            GauntletType.Fire => "fire_gauntlet",
-            _ => "default_gauntlet"
-        };
-        gauntletSprite.Visible = true;
-        
-        gauntletSprite.Play($"{baseAnimation}_idle_down");
+        return leftAttack;
     }
 
-    public string GetAttackAnimation(GauntletType type, bool isRightHand, string direction)
+    public RightAttack GetRightAttack()
     {
-        string baseAnimation = type switch
-        {
-            GauntletType.Air => "air_attack_1",
-            GauntletType.Fire => "fire_attack_1",
-            _ => "default_attack"
-        };
-        return $"{baseAnimation}_{direction}".TrimEnd('_');
-    }
-
-    public string GetGauntletTypeString(GauntletType gauntletType)
-    {
-        return gauntletType.ToString().ToLower() + "_";
-    }
-
-    public void SetRightGauntletType(GauntletType type)
-    {
-        rightGauntletType = type;
-        GD.Print("Right gauntlet updated to: " + rightGauntletType);
-    }
-
-
-    public GauntletType GetLeftGauntletType()
-    {
-        return leftGauntletType;
-    }
-
-    public GauntletType GetRightGauntletType()
-    {
-        return rightGauntletType;
+        return rightAttack;
     }
 }

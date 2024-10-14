@@ -1,42 +1,40 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class Player : CharacterBody2D
 {
-    private float speed = 300f;
+    private float speed = 200f;
     private Vector2 currentVelocity;
     private Vector2 currentDirection;
     
     private AnimatedSprite2D PlayerSprite;
 
     private Dodge dodge;
-
     private LeftAttack leftAttack;
     private RightAttack rightAttack;
-    private Vector2 lookDirection;
 
     private GauntletManager gauntletManager;
-    private Node2D leftGauntlet;
-    private Node2D rightGauntlet;
+    private GauntletInventory gauntletInventory;
 
     public override void _Ready()
     {
         PlayerSprite = GetNode<AnimatedSprite2D>("PlayerSprite");
         dodge = new Dodge(this, PlayerSprite);
         gauntletManager = GetNode<GauntletManager>("GauntletManager");
-        // SET GAUNTLETS HERE
-        gauntletManager.EquipGauntlet("left", "Water");
+        gauntletInventory = GetNode<GauntletInventory>("GauntletInventory");
+
+        gauntletManager.EquipGauntlet("left", "Air");
         gauntletManager.EquipGauntlet("right", "Fire");
 
         leftAttack = gauntletManager.GetLeftAttack();
         rightAttack = gauntletManager.GetRightAttack();
-        leftGauntlet = GetNode<Node2D>("GauntletManager/LeftGauntlet");
-        rightGauntlet = GetNode<Node2D>("GauntletManager/RightGauntlet");
     }
 
     public override void _PhysicsProcess(double delta)
     {
         base._PhysicsProcess(delta);
         dodge.UpdateDodge((float)delta);
+
         if (!dodge.IsDodging())
         {
             handleInput();
@@ -44,17 +42,14 @@ public partial class Player : CharacterBody2D
             leftAttack?.UpdateAttack((float)delta);
             rightAttack?.UpdateAttack((float)delta);
         }
+
         MoveAndSlide();
     }
 
     private void handleInput()
     {
-        currentVelocity = Input.GetVector("left", "right", "up", "down");
-        currentVelocity *= speed;
-        if (currentVelocity != Vector2.Zero)
-        {
-            currentDirection = currentVelocity.Normalized();
-        }
+        currentVelocity = Input.GetVector("left", "right", "up", "down") * speed;
+
         if (Input.IsActionJustPressed("dodge"))
         {
             dodge.StartDodge(currentVelocity);
@@ -64,6 +59,41 @@ public partial class Player : CharacterBody2D
             Velocity = currentVelocity;
         }
 
+        if (Input.IsActionJustPressed("changeLeftGauntlet"))
+        {
+            SwitchLeftGauntlet();
+        }
+
+        if (Input.IsActionJustPressed("changeRightGauntlet"))
+        {
+            SwitchRightGauntlet();
+        }
+    }
+
+    public void SwitchLeftGauntlet()
+    {
+        string currentGauntlet = gauntletManager.GetGauntletType("left");
+        List<string> unlockedGauntlets = gauntletInventory.GetUnlockedGauntlets();
+        int currentIndex = unlockedGauntlets.IndexOf(currentGauntlet);
+        int nextIndex = (currentIndex + 1) % unlockedGauntlets.Count;
+        string nextGauntlet = unlockedGauntlets[nextIndex];
+    
+        gauntletManager.EquipGauntlet("left", nextGauntlet);
+        leftAttack = gauntletManager.GetLeftAttack();
+        gauntletManager.UpdateGauntletAnimations("left");
+    }
+
+    public void SwitchRightGauntlet()
+    {
+        string currentGauntlet = gauntletManager.GetGauntletType("right");
+        List<string> unlockedGauntlets = gauntletInventory.GetUnlockedGauntlets();
+        int currentIndex = unlockedGauntlets.IndexOf(currentGauntlet);
+        int nextIndex = (currentIndex + 1) % unlockedGauntlets.Count;
+        string nextGauntlet = unlockedGauntlets[nextIndex];
+    
+        gauntletManager.EquipGauntlet("right", nextGauntlet);
+        rightAttack = gauntletManager.GetRightAttack();
+        gauntletManager.UpdateGauntletAnimations("right");
     }
 
     private void handleAnimation()

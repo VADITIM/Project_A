@@ -3,8 +3,8 @@ using Godot;
 public partial class Dodge : Node
 {
     private bool isDodging = false;
-    private float dodgeSpeed = 450f;
-    private float dodgeTime = .42f;   
+    private float dodgeSpeed = 350f;
+    private float dodgeTime = .40f;   
     private float dodgeCooldown = .6f; 
     private float dodgeCooldownTimer = 0f;   
     private float currentDodgeCooldownTimer;   

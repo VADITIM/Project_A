@@ -1,16 +1,17 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class GauntletManager : Node
 {
     [Export] public PackedScene AirGauntletScene;
     [Export] public PackedScene FireGauntletScene;
+    [Export] public PackedScene WaterGauntletScene;
     [Export] public PackedScene AirAttackScene;
     [Export] public PackedScene FireAttackScene;
-    [Export] public PackedScene WaterGauntletScene;
     [Export] public PackedScene WaterAttackScene;
-    [Export] private Node2D leftGauntlet; 
-    [Export] private Node2D rightGauntlet;
+    [Export] public Node2D leftGauntlet; 
+    [Export] public Node2D rightGauntlet;
 
     private LeftAttack leftAttack;
     private RightAttack rightAttack;
@@ -30,26 +31,17 @@ public partial class GauntletManager : Node
         { "Water", 15f }
     };
 
+    private Dictionary<string, float> gauntletDamages = new Dictionary<string, float>
+    {
+        { "Air", 10f },
+        { "Fire", 20f },
+        { "Water", 15f }
+    };
+
     public override void _Ready()
     {
         EquipGauntletToHand(leftGauntlet, WaterGauntletScene, WaterAttackScene, false);
         EquipGauntletToHand(rightGauntlet, FireGauntletScene, FireAttackScene, true);
-    }
-
-    public void UpdateGauntletAnimations(string side)
-    {
-        if (side == "left")
-        {
-            // Update left gauntlet animations
-            currentLeftGauntletIdleAnimation = GetCurrentGauntletIdleAnimation("left");
-            currentLeftGauntletAttackAnimation = GetCurrentGauntletAttackAnimation("left");
-        }
-        else if (side == "right")
-        {
-            // Update right gauntlet animations
-            currentRightGauntletIdleAnimation = GetCurrentGauntletIdleAnimation("right");
-            currentRightGauntletAttackAnimation = GetCurrentGauntletAttackAnimation("right");
-        }
     }
 
     public void EquipGauntlet(string side, string gauntletType)
@@ -72,7 +64,33 @@ public partial class GauntletManager : Node
         }
         equippedGauntlets[side] = gauntletType;
     }
-        private PackedScene GetGauntletScene(string gauntletType)
+
+    public void EquipGauntletToHand(Node2D handNode, PackedScene gauntletScene, PackedScene attackScene, bool isRightHand)
+    {
+        foreach (Node child in handNode.GetChildren())
+        {
+            child.QueueFree();
+        }
+        var newGauntlet = (Node2D)gauntletScene.Instantiate();
+        handNode.AddChild(newGauntlet);
+        var attackAnimation = (Node2D)attackScene.Instantiate();
+        newGauntlet.AddChild(attackAnimation);
+        var gauntletSprite = newGauntlet.GetNode<AnimatedSprite2D>("GauntletSprite");
+        var effectSprite = attackAnimation.GetNode<AnimatedSprite2D>("EffectSprite");
+        var hitbox = attackAnimation.GetNode<Area2D>("EffectSprite/Hitbox");
+        var player = GetParent().GetParent().GetNode<CharacterBody2D>("Player");
+        var playerSprite = player.GetNode<AnimatedSprite2D>("PlayerSprite");
+        if (isRightHand)
+        {
+            rightAttack = new RightAttack(player, playerSprite, effectSprite, hitbox, gauntletSprite, this);
+        }
+        else
+        {
+            leftAttack = new LeftAttack(player, playerSprite, effectSprite, hitbox, gauntletSprite, this);
+        }
+    }
+
+    private PackedScene GetGauntletScene(string gauntletType)
     {
         switch (gauntletType)
         {
@@ -106,10 +124,30 @@ public partial class GauntletManager : Node
     {
         return equippedGauntlets.ContainsKey(side) ? equippedGauntlets[side] : null;
     }
+
+    public float GetGauntletDamage(string side)
+    {
+        string gauntletType = GetGauntletType(side);
+        return gauntletDamages.ContainsKey(gauntletType) ? gauntletDamages[gauntletType] : 0f;
+    }
+
+    public void UpdateGauntletAnimations(string side)
+    {
+        if (side == "left")
+        {
+            currentLeftGauntletIdleAnimation = GetCurrentGauntletIdleAnimation("left");
+            currentLeftGauntletAttackAnimation = GetCurrentGauntletAttackAnimation("left");
+        }
+        else if (side == "right")
+        {
+            currentRightGauntletIdleAnimation = GetCurrentGauntletIdleAnimation("right");
+            currentRightGauntletAttackAnimation = GetCurrentGauntletAttackAnimation("right");
+        }
+    }
+
     public string GetCurrentGauntletIdleAnimation(string side)
     {
         string gauntletType = GetGauntletType(side);
-        // GD.Print($"Retrieving idle animation for {side} gauntlet: {gauntletType}");
         if (gauntletType == "Air")
         {
             return "air_gauntlet_idle"; 
@@ -123,14 +161,11 @@ public partial class GauntletManager : Node
             return "water_gauntlet_idle"; 
         }
         return "default_idle";
-
-        
     }
 
     public string GetCurrentGauntletAttackAnimation(string side)
     {
         string gauntletType = GetGauntletType(side);
-        // GD.Print($"Retrieving attack animation for {side} gauntlet: {gauntletType}");
         if (gauntletType == "Air")
         {
             return "air_gauntlet_attack"; 
@@ -145,7 +180,7 @@ public partial class GauntletManager : Node
         }
         return "default_attack";
     }
-    
+
     public void SetCurrentGauntletIdleAnimation(string hand, string animation)
     {
         if (hand == "left")
@@ -158,38 +193,11 @@ public partial class GauntletManager : Node
         }
     }
 
-    public void EquipGauntletToHand(Node2D handNode, PackedScene gauntletScene, PackedScene attackScene, bool isRightHand)
-    {
-        foreach (Node child in handNode.GetChildren())
-        {
-            child.QueueFree();
-        }
-
-        var newGauntlet = (Node2D)gauntletScene.Instantiate();
-        handNode.AddChild(newGauntlet);
-        var attackAnimation = (Node2D)attackScene.Instantiate();
-        newGauntlet.AddChild(attackAnimation);
-        var gauntletSprite = newGauntlet.GetNode<AnimatedSprite2D>("GauntletSprite");
-        var effectSprite = attackAnimation.GetNode<AnimatedSprite2D>("EffectSprite");
-        var hitbox = attackAnimation.GetNode<Area2D>("EffectSprite/Hitbox");
-        var player = GetParent().GetParent().GetNode<CharacterBody2D>("Player");
-        var playerSprite = player.GetNode<AnimatedSprite2D>("PlayerSprite");
-
-        if (isRightHand)
-        {
-            rightAttack = new RightAttack(player, playerSprite, effectSprite, hitbox, gauntletSprite, this);
-        }
-        else
-        {
-            leftAttack = new LeftAttack(player, playerSprite, effectSprite, hitbox, gauntletSprite, this);
-        }
-    }
-    
     public float GetAttackOffset(string gauntletType)
     {
         return attackOffsets.ContainsKey(gauntletType) ? attackOffsets[gauntletType] : 25f;
     }
-       
+
     public LeftAttack GetLeftAttack()
     {
         return leftAttack;

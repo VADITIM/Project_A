@@ -39,8 +39,8 @@ public partial class Player : CharacterBody2D
         {
             handleInput();
             handleAnimation();
-            leftAttack?.UpdateAttack((float)delta);
-            rightAttack?.UpdateAttack((float)delta);
+            leftAttack?.UpdateAttack((float)delta, "leftAttack");
+            rightAttack?.UpdateAttack((float)delta, "rightAttack");
         }
 
         MoveAndSlide();

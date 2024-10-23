@@ -8,31 +8,28 @@ public partial class Enemy : Node2D
 
     public override void _Ready()
     {
-        GD.Print($"{Name} HP: {health}");
+        GD.Print($" 'Enemy' - {Name} HP: {health}");
         hitbox = GetNode<Area2D>("Hitbox");
-        hitbox.Connect("area_entered", new Callable(this, nameof(OnHitboxAreaEntered)));
+        hitbox.Connect("area_entered", new Callable(this, nameof(OnAreaEnter)));
     }
 
-    public override void _Process(double delta)
-    {
-    }
-
-    private void OnHitboxAreaEntered(Area2D area)
+    public virtual void OnAreaEnter(Area2D area)
     {
         if (area.IsInGroup("PlayerAttack"))
         {
-            TakeDamage(damage); 
+            TakeDamage(0);
         }
     }
 
     public virtual void TakeDamage(float damage)
     {
         health -= damage;
-        GD.Print($"{Name} took damage. Current HP: {health}");
+        GD.Print($" 'Enemy' - {Name} took damage. Current HP: {health}");
         if (health <= 0)
         {
-            GD.Print($"{Name} defeated.");
+            GD.Print($" 'Enemy' - {Name} defeated.");
             QueueFree(); 
         }
     }
+
 }

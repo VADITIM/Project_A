@@ -29,7 +29,7 @@ public partial class BaseAttack : Node
         this.gauntletManager = gauntletManager;
 
         hitboxShape = hitbox.GetNode<CollisionShape2D>("CollisionShape2D");
-        hitbox.Connect("area_entered", new Callable(this, nameof(OnAreaEntered)));
+        hitbox.Connect("area_entered", new Callable(this, nameof(AreaEnter)));
         hitbox.Monitoring = false;
 
         gauntletSprite.ZIndex = 3;
@@ -40,11 +40,6 @@ public partial class BaseAttack : Node
     public override void _Ready()
     {
         enemy = GetNode<Enemy>("/root/Main/Enemy");
-
-        if (enemy == null)
-        {
-            GD.Print("Enemy not found.");
-        }
     }
 
     public virtual void UpdateAttack(float delta, string inputAction)
@@ -117,19 +112,10 @@ public partial class BaseAttack : Node
         hitbox.Monitoring = false;
     }
 
-protected virtual void OnAreaEntered(Area2D other)
-{
-    Node parent = other.GetParent();
-    if (parent is Enemy hitEnemy)
+    protected virtual void AreaEnter(Area2D other)
     {
-        GD.Print("Hit: " + hitEnemy.Name);
-        hitEnemy.TakeDamage(10); 
+        
     }
-    else
-    {
-        GD.Print("Hit something else: " + other.Name);
-    }
-}
 
     public AnimatedSprite2D GetGauntletSprite()
     {

@@ -17,12 +17,12 @@ public partial class LeftAttack : BaseAttack
         UpdateAttack(delta, "leftAttack"); 
     }
 
-    protected override void OnAreaEntered(Area2D area)
+    protected override void AreaEnter(Area2D area)
     {
         Node parent = area.GetParent();
         if (parent is Enemy enemy)
         {
-            GD.Print("Hit enemy: " + enemy.Name);
+            GD.Print(" 'LeftAttack' - Hit enemy: " + enemy.Name);
             float damage = gauntletManager.GetGauntletDamage("left");
             enemy.TakeDamage(damage); 
         }

@@ -10,15 +10,14 @@ public partial class Dodge : Node
     private float currentDodgeCooldownTimer;   
     private Vector2 dodgeDirection;
 
-    private CharacterBody2D player;
+    private Player player;
     private AnimatedSprite2D playerSprite;
 
 
-    public Dodge(CharacterBody2D player, AnimatedSprite2D playerSprite)
+    public Dodge(Player player, AnimatedSprite2D playerSprite)
     {
         this.player = player;
         this.playerSprite = playerSprite;
-        this.player = player;
     }
 
     public void StartDodge(Vector2 direction)
@@ -26,6 +25,7 @@ public partial class Dodge : Node
         if (dodgeCooldownTimer <= 0)
         {
             isDodging = true;
+            player.StopAttack();
             currentDodgeCooldownTimer = dodgeTime; 
             dodgeCooldownTimer = dodgeCooldown;
             dodgeDirection = direction.Normalized();

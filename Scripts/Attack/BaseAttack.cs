@@ -1,3 +1,4 @@
+using System.Net.Security;
 using Godot;
 
 public partial class BaseAttack : Node
@@ -66,7 +67,7 @@ public partial class BaseAttack : Node
         }
     }
 
-    protected virtual void StartAttack()
+    public virtual void StartAttack()
     {
         windup = true;
         currentAttackCooldownTimer = time;

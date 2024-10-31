@@ -4,12 +4,12 @@ using System.Collections.Generic;
 public partial class Player : CharacterBody2D
 {
     private float speed = 200f;
-    private Vector2 currentVelocity;
-    private Vector2 currentDirection;
+    public Vector2 currentVelocity;
+    public Vector2 currentDirection;
     
-    private AnimatedSprite2D PlayerSprite;
+    public AnimatedSprite2D PlayerSprite;
 
-    private Dodge dodge;
+    public Dodge dodge;
     private LeftAttack leftAttack;
     private RightAttack rightAttack;
 
@@ -59,6 +59,19 @@ public partial class Player : CharacterBody2D
             Velocity = currentVelocity;
         }
 
+        if (!dodge.IsDodging())
+        {
+            if (Input.IsActionJustPressed("leftAttack"))
+            {
+                leftAttack?.StartAttack();
+            }
+
+            if (Input.IsActionJustPressed("rightAttack"))
+            {
+                rightAttack?.StartAttack();
+            }
+        }
+
         if (Input.IsActionJustPressed("changeLeftGauntlet"))
         {
             SwitchLeftGauntlet();
@@ -68,6 +81,18 @@ public partial class Player : CharacterBody2D
         {
             SwitchRightGauntlet();
         }
+    }
+
+    private void StartAttack()
+    {
+        leftAttack?.StartAttack();
+        rightAttack?.StartAttack();
+    }
+
+    public void StopAttack()
+    {
+        leftAttack?.StopAttack();
+        rightAttack?.StopAttack();
     }
 
     public void SwitchLeftGauntlet()

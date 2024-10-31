@@ -15,10 +15,10 @@ public partial class Enemy : Node2D
 
     public virtual void OnAreaEnter(Area2D area)
     {
-        if (area.IsInGroup("PlayerAttack"))
-        {
-            TakeDamage(0);
-        }
+        // if (area.IsInGroup("PlayerAttack"))
+        // {
+        //     TakeDamage(0);
+        // }
     }
 
     public virtual void TakeDamage(float damage)

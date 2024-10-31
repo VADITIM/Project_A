@@ -13,12 +13,12 @@ public partial class Goblin : Enemy
 
         stateMachine = GetNode<StateMachine>("State Machine Component");
         animatedSprite = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+        GD.Print($" 'Goblin' - {Name} HP: {health}");
     }
 
     public override void TakeDamage(float damage)
     {
         base.TakeDamage(damage);
-
         stateMachine.Transition("HurtState");
     }
 

@@ -7,8 +7,8 @@ public partial class StateMachine : Node
 
 	[Export] public NodePath initialState;
 
-	private Dictionary<string, State> states;
-	private State currentState;
+	public Dictionary<string, State> states;
+	public State currentState;
 
 	public override void _Ready()
 	{
@@ -39,18 +39,19 @@ public partial class StateMachine : Node
 
 	public override void _PhysicsProcess(double delta)
 	{
-		// currentState.PhysicsUpdate((float) delta);
+		currentState.PhysicsUpdate((float) delta);
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
-		// currentState.HandleInput(@event);
+		currentState.HandleInput(@event);
 	}
 
 	public void Transition(string key)
 	{
 		if (!states.ContainsKey(key) || currentState == states[key])
 			return;
+    GD.Print($"Transitioning from {currentState.Name} to {key}");
 
 		currentState.Exit();
 		currentState = states[key];

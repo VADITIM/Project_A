@@ -2,27 +2,22 @@ using Godot;
 
 public partial class HurtState : State
 {
+    private Goblin goblin;
+    private AnimatedSprite2D sprite;
 
-	private Goblin goblin;
-	private AnimatedSprite2D sprite;
-	private Node2D hurt;
-	
     public override void Enter()
     {
         base.Enter();
-        var goblin = (Goblin)stateMachine.GetParent();
+        goblin = (Goblin)stateMachine.GetParent();  // Get the Goblin instance from the State Machine's parent
         sprite = goblin.GetNode<AnimatedSprite2D>("AnimatedSprite2D");
-		sprite.Play("hurt");
-		hurt = goblin.GetNode<Node2D>("Hurt");
-		hurt.Visible = false;
-		GD.Print("Goblin is hurt");
+        sprite.Play("hurt");
+        GD.Print("Goblin is hurt");
     }
 
     public override void Update(float delta)
     {
-        base.Update(delta);
-        
-        if (goblin.IsAnimationFinished("hurt"))
+        // Check if hurt animation finished, then transition to Idle
+        if (sprite.IsPlaying() && sprite.Animation == "hurt" && sprite.Frame == sprite.SpriteFrames.GetFrameCount("hurt") - 1)
         {
             stateMachine.Transition("Idle");
         }
@@ -30,5 +25,7 @@ public partial class HurtState : State
 
     public override void Exit()
     {
+        base.Exit();
+        GD.Print("Exiting Hurt State");
     }
 }

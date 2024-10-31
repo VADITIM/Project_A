@@ -22,7 +22,7 @@ public partial class Dodge : Node
 
     public void StartDodge(Vector2 direction)
     {
-        if (dodgeCooldownTimer <= 0)
+        if (dodgeCooldownTimer <= 0 && player.Velocity.Length() > 0)
         {
             isDodging = true;
             player.StopAttack();

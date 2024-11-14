@@ -13,7 +13,6 @@ public partial class Dodge : Node
     private Player player;
     private AnimatedSprite2D playerSprite;
 
-
     public Dodge(Player player, AnimatedSprite2D playerSprite)
     {
         this.player = player;
@@ -33,6 +32,7 @@ public partial class Dodge : Node
         }
     }
 
+    // Method in which the direction can be slightly adjusted during the dodge
     public void UpdateDodge(float delta)
     {
         if (isDodging)
@@ -46,7 +46,7 @@ public partial class Dodge : Node
                 inputDirection = Vector2.Zero;
             }
 
-            Vector2 adjustedDirection = dodgeDirection + inputDirection * 0.35f; 
+            Vector2 adjustedDirection = dodgeDirection + inputDirection * 0.25f; 
             player.Velocity = adjustedDirection.Normalized() * dodgeSpeed;
 
             if (currentDodgeCooldownTimer <= 0)
@@ -60,6 +60,30 @@ public partial class Dodge : Node
             dodgeCooldownTimer -= delta;
         }
     }
+
+    // Method in which the direction cannot be adjusted during the dodge
+    // public void UpdateDodge(float delta)
+    // {
+    //     if (isDodging)
+    //     {
+    //         currentDodgeCooldownTimer -= delta;
+    
+    //         if (currentDodgeCooldownTimer <= 0f)
+    //         {
+    //             isDodging = false;
+    //             player.Velocity = Vector2.Zero;
+    //         }
+    //         else
+    //         {
+    //             player.Velocity = dodgeDirection * dodgeSpeed;
+    //         }
+    //     }
+    
+    //     if (dodgeCooldownTimer > 0f)
+    //     {
+    //         dodgeCooldownTimer -= delta;
+    //     }
+    // }
 
     private void EndDodge()
     {

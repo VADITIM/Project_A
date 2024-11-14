@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.IO;
 
 public partial class Player : CharacterBody2D
 {
@@ -42,7 +43,6 @@ public partial class Player : CharacterBody2D
             leftAttack?.UpdateAttack((float)delta, "leftAttack");
             rightAttack?.UpdateAttack((float)delta, "rightAttack");
         }
-
         MoveAndSlide();
     }
 
@@ -120,6 +120,7 @@ public partial class Player : CharacterBody2D
         rightAttack = gauntletManager.GetRightAttack();
         gauntletManager.UpdateGauntletAnimations("right");
     }
+
 
     private void handleAnimation()
     {
@@ -223,6 +224,7 @@ public partial class Player : CharacterBody2D
             break;
         }
     }
+
 
     private string GetOppositeDirection(string direction)
     {

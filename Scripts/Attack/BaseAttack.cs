@@ -1,4 +1,3 @@
-using System.Net.Security;
 using Godot;
 
 public partial class BaseAttack : Node
@@ -12,7 +11,7 @@ public partial class BaseAttack : Node
 
     protected AnimatedSprite2D playerSprite;
     protected AnimatedSprite2D effectSprite;
-    protected AnimatedSprite2D gauntletSprite;  // Generic gauntlet sprite reference
+    protected AnimatedSprite2D gauntletSprite; 
     protected Area2D hitbox;
     protected CollisionShape2D hitboxShape;
     protected CharacterBody2D player;
@@ -75,6 +74,7 @@ public partial class BaseAttack : Node
         attackDirection = directionToMouse.Normalized();
         effectSprite.Visible = true;
         hitbox.Monitoring = true;
+
         PlayAttackAnimations();
         UpdateEffectSpriteZIndex();
     }
@@ -84,14 +84,18 @@ public partial class BaseAttack : Node
         Vector2 gauntletPosition = gauntletSprite.GlobalPosition;
         float effectOffset = gauntletManager.GetAttackOffset(gauntletManager.GetGauntletType(GetGauntletType()));
         Vector2 offsetVector = new Vector2(effectOffset, effectOffset) * attackDirection;
+        
         bool isMouseOnLeft = attackDirection.X < 0;
         float angleToMouse = attackDirection.Angle();
         string direction = isMouseOnLeft ? "1_flipped" : "1";
+
         effectSprite.FlipH = isMouseOnLeft;
         effectSprite.GlobalPosition = gauntletPosition + offsetVector;
         effectSprite.Rotation = angleToMouse;
+
         string baseAttackAnimation = gauntletManager.GetCurrentGauntletAttackAnimation(GetGauntletType());
         string attackAnimation = $"{baseAttackAnimation}_{direction}";
+
         effectSprite.Play(attackAnimation);
     }
 
@@ -113,13 +117,10 @@ public partial class BaseAttack : Node
         hitbox.Monitoring = false;
     }
 
-    protected virtual void AreaEnter(Area2D other)
-    {
-        
-    }
-
     public AnimatedSprite2D GetGauntletSprite()
     {
         return gauntletSprite;
     }
+
+    protected virtual void AreaEnter(Area2D other) { }
 }
